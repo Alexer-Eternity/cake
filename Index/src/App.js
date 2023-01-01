@@ -1,64 +1,87 @@
 import './App.css';
+//specify products to be an array
 
 function App() {
-  return (
-      <div>
-        <h1
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'}}
-        >蛋糕店</h1>
 
-        <div className="grid-container">
-            {show()}
+    return (
+        <div>
+            <h1
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >蛋糕店</h1>
 
-          </div>
-            <button id = "checkout" onClick={checkout}>结账</button>
-      </div>
-
-  );
-}
-//create a array of products objects with price, picture and name
-const products = [
-    {
-        name: "蛋糕1",
-        price: 20,
-        picture: "https://i.pinimg.com/600x/0e/11/1d/0e111d11dd274641805cdb52381b4b78.jpg"
-    },
-    {
-        name: "蛋糕2",
-        price: 20,
-        picture: "https://i.pinimg.com/736x/ba/2f/ab/ba2fabaee801d760b40bc5ec8fb7b22f.jpg"
-    },
-    {
-        name: "蛋糕3",
-        price: 20,
-        picture: "https://i.pinimg.com/236x/6a/ed/0e/6aed0e681f0d2e5a23a4a0a30eca3d27.jpg"
-    },
-    {
-        name: "蛋糕4",
-        price: 20,
-        picture: "https://i.pinimg.com/236x/82/07/2b/82072b758c211de941d1bfbd48c4fb94--christmas-baking-christmas-treats.jpg"
-    },
-    {
-        name: "蛋糕5",
-        price: 20,
-        picture: "https://i.pinimg.com/236x/6a/ed/0e/6aed0e681f0d2e5a23a4a0a30eca3d27.jpg"
-    }
-
-    ]
-function show() {
-    return products.map((product) => {
-        return (
-            <div className="grid-item">
-                <img src={product.picture} width = "100" height = "100" alt="cake" />
-
-                <div className={"NP"}>{product.name+"   "+ product.price+"元"} <input type="checkbox" id={product.name} /></div>
+            <div className="grid-container">
+                {show()}
 
             </div>
-        )
-    })
+            <button id="checkout" onClick={checkout}>结账</button>
+        </div>
+
+    );
+}
+
+
+
+function show() {
+    var products = [];
+
+    fetch(
+        "http://api.cake.shhzet.com/api/Product/GetList",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                "pageIndex": 0,
+                "pageSize": 0
+            })
+
+
+        }
+    ).then((response) => {
+            return response.json();
+        }
+    ).then((data) => {
+
+
+            for (let i = 0; i < data.models.length; i++) {
+
+                products.push({
+                    thumbnail: data.models[i].thumbnail,
+                    name: data.models[i].name,
+                    price: data.models[i].price,
+                    category: data.models[i].category
+
+                })
+
+            }
+            console.log(products);
+
+        }
+    ).catch((error) => {
+            console.log(error);
+        }
+    );
+    console.log(products);
+
+     return products.forEach((product) => {
+                    return (
+                        <div className="grid-item">
+
+                        <div className={product.category}>
+                            <img src={product.thumbnail} width="100" height="100" alt="cake"/>
+
+                            <p className={"NP"}>{product.name + "   " + product.price + "元"} <input type="checkbox" id={product.name}/></p>
+                        </div>
+                        </div>
+
+                    )
+                })
+
 }
 
 function checkout() {

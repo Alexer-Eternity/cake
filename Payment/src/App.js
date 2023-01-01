@@ -1,6 +1,7 @@
 import './App.css';
 
 function App() {
+    console.log(productsA);
   return (
       <div className ="grid-container ">
             <div className="payment"  >
