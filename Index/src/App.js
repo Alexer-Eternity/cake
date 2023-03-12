@@ -1,4 +1,6 @@
 import './App.css';
+import React, { useState, useEffect } from 'react';
+
 //specify products to be an array
 
 function App() {
@@ -26,63 +28,58 @@ function App() {
 
 
 function show() {
-    var products = [];
+    const [products, setProducts] = useState([]);
 
-    fetch(
-        "http://api.cake.shhzet.com/api/Product/GetList",
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                "pageIndex": 0,
-                "pageSize": 0
-            })
-
-
-        }
-    ).then((response) => {
-            return response.json();
-        }
-    ).then((data) => {
-
-
-            for (let i = 0; i < data.models.length; i++) {
-
-                products.push({
-                    thumbnail: data.models[i].thumbnail,
-                    name: data.models[i].name,
-                    price: data.models[i].price,
-                    category: data.models[i].category
-
+    useEffect(() => {
+        fetch(
+            "http://api.cake.shhzet.com/api/Product/GetList",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "pageIndex": 0,
+                    "pageSize": 0
                 })
-
             }
-            console.log(products);
+        )
+            .then(response => response.json())
+            .then(data => {
+                const newProducts = data.models.map(model => ({
+                    thumbnail: model.thumbnail,
+                    name: model.name,
+                    price: model.price,
+                    category: model.category
+                }));
 
-        }
-    ).catch((error) => {
-            console.log(error);
-        }
+                setProducts(newProducts);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }, []);
+//store the list of products in to localstorage
+    localStorage.setItem("products", JSON.stringify(products));
+
+return (
+        <div className="grid-container">
+            {products.map(product => (
+                <div key={product.name} className="grid-item">
+                    <div className={product.category}>
+                        <img src={product.thumbnail} width="100" height="100" alt="cake" />
+                        <p className={"NP"}>
+                            {product.name + "   " + product.price + "元"}
+                            <input type="checkbox" id={product.name} />
+                        </p>
+                    </div>
+                </div>
+            ))}
+        </div>
     );
-    console.log(products);
-
-     return products.forEach((product) => {
-                    return (
-                        <div className="grid-item">
-
-                        <div className={product.category}>
-                            <img src={product.thumbnail} width="100" height="100" alt="cake"/>
-
-                            <p className={"NP"}>{product.name + "   " + product.price + "元"} <input type="checkbox" id={product.name}/></p>
-                        </div>
-                        </div>
-
-                    )
-                })
 
 }
+
 
 function checkout() {
     let products = [];
@@ -90,7 +87,7 @@ function checkout() {
     checkboxes.forEach((checkbox) => {
         products.push(checkbox.id);
     })
-    localStorage.setItem("products", JSON.stringify(products));
+    localStorage.setItem("CartProducts", JSON.stringify(products));
 
 
     window.location.href = "/payment"

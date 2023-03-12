@@ -1,7 +1,6 @@
 import './App.css';
 
 function App() {
-    console.log(productsA);
   return (
       <div className ="grid-container ">
             <div className="payment"  >
@@ -15,34 +14,6 @@ function App() {
   );
 }
 var total= 0;
-const productsA = [
-    {
-        name: "蛋糕1",
-        price: 20,
-        picture: "https://images.unsplash.com/photo-1612200394603-3c8d8b0f8c1f?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-    },
-    {
-        name: "蛋糕2",
-        price: 20,
-        picture: "https://images.unsplash.com/photo-1612200394603-3c8d8b0f8c1f?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-    },
-    {
-        name: "蛋糕3",
-        price: 20,
-        picture: "https://images.unsplash.com/photo-1612200394603-3c8d8b0f8c1f?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-    },
-    {
-        name: "蛋糕4",
-        price: 20,
-        picture: "https://images.unsplash.com/photo-1612200394603-3c8d8b0f8c1f?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-    },
-    {
-        name: "蛋糕5",
-        price: 20,
-        picture: "https://images.unsplash.com/photo-1612200394603-3c8d8b0f8c1f?ixid"
-    }
-
-]
 //create payment and delivery form
 function payment() {
     return (
@@ -79,11 +50,63 @@ function payment() {
                 <label>
                     CVV:</label> <input type="number" name="cvv" />
             </div>
-                <input type="Submit" value="提交" />
+            <button onClick={submit}>提交</button>
+
+
         </div>
     )
 }
-//checkout
+function submit() {
+    let products = JSON.parse(localStorage.getItem("products"));
+    let cartProducts = JSON.parse(localStorage.getItem("CartProducts"));
+    let name = document.getElementsByName("name")[0].value;
+    let address = document.getElementsByName("address")[0].value;
+    let email = document.getElementsByName("email")[0].value;
+
+    let orderedProduct = products.find(product => product.name === cartProducts[0]);
+
+    let order = {
+        "product": {
+            "id": orderedProduct.id,
+            "name": orderedProduct.name,
+            "price": orderedProduct.price,
+            "thumbnail": orderedProduct.thumbnail,
+           
+        },
+        "user": {
+            "name": name,
+            "mail": email
+        },
+        "address": address,
+        "qty": cartProducts.length,
+        "deliveryDate": new Date().toISOString(),
+        "updateTime": new Date().toISOString(),
+        "createdTime": new Date().toISOString()
+    };
+    fetch("http://api.cake.shhzet.com/api/Order/Add",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(order)
+        }
+    )
+        .then(response => response.json())
+        .then(data => {
+            if (data && data !== "") {
+                console.log(data);
+                alert("Order successful!");
+            } else {
+                throw new Error("Invalid data returned from API");
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Error placing order!");
+        });
+}
+
 function checkout() {
     return (
  <div>
@@ -96,8 +119,10 @@ function checkout() {
     )
 
 }
+
 function show() {
-    let products = JSON.parse(localStorage.getItem("products"));
+    let products = JSON.parse(localStorage.getItem("CartProducts"));
+
     if (products == null) {
         return <div>There is no product in the cart</div>
 
@@ -118,10 +143,11 @@ function show() {
     }
 }
 
-function findPrice(name) {
-    for (let i = 0; i < productsA.length; i++) {
-        if (productsA[i].name === name) {
-            return productsA[i].price;
+function findPrice(product) {
+    let products = JSON.parse(localStorage.getItem("products"));
+    for (let i = 0; i < products.length; i++) {
+        if (products[i].name == product) {
+            return products[i].price;
         }
     }
 }
